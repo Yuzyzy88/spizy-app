@@ -1,0 +1,20 @@
+.heading {
+    color: black
+}
+.container{
+    width: 100%;
+    max-width: 100%;
+}
+.back_page {
+    height: 90vh;
+    background-image: url('/background.jpg');
+    background-size: cover;
+    background-position-x: center;
+    width: 100%;
+
+}
+.form {
+    background-color: #ffffff99;
+    max-width: 500px;
+    border-radius: 3px;
+}
