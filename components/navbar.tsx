@@ -1,29 +1,40 @@
-import React, { FormEvent, FunctionComponent } from "react";
+import React, { FormEvent, FunctionComponent, useMemo, useState } from "react";
 import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import Link from "next/link";
 import { RootState } from "../state/reducers";
 import { useSelector } from "react-redux";
 import { logout_user } from "../state/userSlice";
-import { store } from "../state/store";
+import { useThunkDispatch } from "../state/store";
 import { useRouter } from "next/router";
 
 export const NavigationBar: FunctionComponent<{}> = ({ children }) => {
   const router = useRouter();
+  const dispatch = useThunkDispatch();
   const { username, first_name, last_name, logged_in } = useSelector(
     (state: RootState) => state.user
   );
-  function logout(event: FormEvent<HTMLFormElement>) {
-    store.dispatch(logout_user({}));
-    router.push('/')
+  const [collapsed, setCollapsed] = useState(true);
+  async function logout() {
+    setCollapsed(false)
+    await dispatch(logout_user());
+    router.push("/");
   }
   return (
     <>
-      <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+      <Navbar
+        collapseOnSelect={true}
+        expanded={collapsed}
+        expand="lg"
+        bg="dark"
+        variant="dark"
+      >
+        <Navbar.Toggle onClick={(e) => setCollapsed(!collapsed)} aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">
             <Nav.Item>
-              <Nav.Link>Home</Nav.Link>
+              <Link href="/">
+                <a className="nav-link" onClick={(e) => setCollapsed(false)}>Home</a>
+              </Link>
             </Nav.Item>
           </Nav>
           {logged_in ? (
@@ -36,7 +47,7 @@ export const NavigationBar: FunctionComponent<{}> = ({ children }) => {
               >
                 <NavDropdown.Item>Setting</NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item onClick={(e) => logout(e)}>
+                <NavDropdown.Item onClick={(e) => logout()}>
                   Logout
                 </NavDropdown.Item>
               </NavDropdown>
@@ -46,12 +57,16 @@ export const NavigationBar: FunctionComponent<{}> = ({ children }) => {
             <Nav>
               <Nav.Item>
                 <Link href="/signup">
-                  <a className="nav-link">Sign Up</a>
+                  <a className="nav-link" onClick={(e) => setCollapsed(false)}>
+                    Sign Up
+                  </a>
                 </Link>
               </Nav.Item>
               <Nav.Item>
                 <Link href="/login">
-                  <a className="nav-link">Login</a>
+                  <a className="nav-link" onClick={(e) => setCollapsed(false)}>
+                    Login
+                  </a>
                 </Link>
               </Nav.Item>
             </Nav>
