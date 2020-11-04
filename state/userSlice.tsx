@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { AxiosError, AxiosResponse } from "axios";
 import { axios_instance } from "../utils/axios";
+import { get_projects } from "./projectsSlice";
+import { get_tasks } from "./tasksSlice";
 
 export const signup_user = createAsyncThunk(
   "user/signup_user",
@@ -27,12 +29,21 @@ export const login_user = createAsyncThunk(
   "user/login_user",
   async (payload: LoginPayload, { dispatch, rejectWithValue }) => {
     try {
-      const csrfToken = await (await axios_instance.get("/csrftoken")).data.token;
-      // Try logging
-      const response = await axios_instance.post("/login", payload, {
-        headers: { "X-CSRFToken": csrfToken },
-      });
-      return response.data;
+      const csrfToken = await (await axios_instance.get("/csrftoken")).data
+        .token;
+      // Try logging in
+      const response_data: LoginAPIResponse = await (
+        await axios_instance.post("/login", payload, {
+          headers: { "X-CSRFToken": csrfToken },
+        })
+      ).data;
+        console.log(response_data)
+
+      // Get the project and task for the user
+      await dispatch(get_projects());
+      await dispatch(get_tasks());
+
+      return response_data;
     } catch (e) {
       // Return error
       const error: AxiosError = e;
@@ -53,12 +64,6 @@ export const logout_user = createAsyncThunk(
     axios_instance.post("/logout", undefined, {
       headers: { "X-CSRFToken": csrfToken },
     });
-
-    // Update state
-    dispatch(set_logged_in({ logged_in: false }));
-    dispatch(set_username({ username: "" }));
-    dispatch(set_first_name({ first_name: "" }));
-    dispatch(set_last_name({ last_name: "" }));
   }
 );
 export const userSlice = createSlice({
@@ -71,7 +76,6 @@ export const userSlice = createSlice({
     signup_loading: false,
   },
   reducers: {
-    logout_user(state, action: LogoutAction) {},
     set_username(
       state,
       action: { type: string; payload: { username: string } }
@@ -110,6 +114,18 @@ export const userSlice = createSlice({
     [signup_user.rejected as any]: (state, action) => {
       return action;
     },
+    [login_user.fulfilled as any]: (state, action: LoginActionFulfilled) => {
+      state.logged_in = true
+      state.username = action.payload.username;
+      state.first_name = action.payload.first_name
+      state.last_name = action.payload.last_name
+    },
+    [logout_user.fulfilled as any]: (state, action) => {
+      state.logged_in = false
+      state.username = ""
+      state.first_name = ""
+      state.last_name = ""
+    }
   },
 });
 
@@ -144,6 +160,16 @@ export declare interface LoginPayload {
 }
 export declare interface LoginAction extends Action {
   payload: LoginPayload;
+}
+
+export declare interface LoginAPIResponse {
+  username: string;
+  first_name: string;
+  last_name: string;
+  status: boolean;
+}
+export declare interface LoginActionFulfilled extends Action {
+  payload: LoginAPIResponse;
 }
 
 export declare interface LogoutAction extends Action {

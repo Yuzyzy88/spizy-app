@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React, { FormEvent, FunctionComponent, useMemo, useState } from "react";
 import { Container, Row, Form, Col, Button } from "react-bootstrap";
-import { store } from "../state/store";
+import { store, useThunkDispatch } from "../state/store";
 import {
   login_user,
   set_first_name,
@@ -11,9 +11,10 @@ import {
 } from "../state/userSlice";
 import signupStyles from "../styles/form.module.css";
 import { useRouter } from "next/router";
-
+import { get_projects } from "../state/projectsSlice";
 export const LoginPage: FunctionComponent<{}> = ({}) => {
   const router = useRouter();
+  const dispatch = useThunkDispatch()
 
   // Form states
   const [formState, setFormstate] = useState({
@@ -34,18 +35,12 @@ export const LoginPage: FunctionComponent<{}> = ({}) => {
     // Check if the form is valid before logging in
     if (formIsValid) {
       // Dispatch login
-      store.dispatch(login_user(formState)).then((data: any) => {
+      dispatch(login_user(formState)).then((data: any) => {
         // Check if there was an error during logging in
         if (data.error) {
         }
         // Else - no errors
         else {
-          store.dispatch(set_username({ username: formState.username }));
-          store.dispatch(
-            set_first_name({ first_name: data.payload.first_name })
-          );
-          store.dispatch(set_last_name({ last_name: data.payload.last_name }));
-          store.dispatch(set_logged_in({ logged_in: true }));
           router.push('/')
         }
         console.log(data);
