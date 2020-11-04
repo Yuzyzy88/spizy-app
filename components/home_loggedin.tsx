@@ -1,19 +1,33 @@
-import React, { useMemo } from "react";
+import { mdiDotsVertical, mdiDotsVerticalCircleOutline } from "@mdi/js";
+import Icon from "@mdi/react";
+import React, { forwardRef, useMemo } from "react";
 import {
   Card,
-  CardDeck,
   Col,
   Container,
+  Dropdown,
   ListGroup,
   Row,
 } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Task } from "../state/projectsSlice";
 import { RootState } from "../state/reducers";
-import { Tasks } from "../state/tasksSlice";
 
 import homeStyles from "../styles/home.module.css";
 
+const iconBtn = forwardRef(({ children, onClick }, ref) => {
+  return (
+    <a
+      ref={ref as any}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+    >
+      <Icon path={mdiDotsVertical} size={1} />
+    </a>
+  );
+});
 export function LoggedInHome() {
   const { projects } = useSelector((state: RootState) => state.projects);
   const { tasks } = useSelector((state: RootState) => state.tasks);
@@ -49,7 +63,18 @@ export function LoggedInHome() {
                   style={{ width: "18rem" }}
                   className="m-3"
                 >
-                  <Card.Header>{project.title}</Card.Header>
+                  <Card.Header>
+                    <Row className="no-gutters justify-content-between">
+                      <span>{project.title}</span>
+                      <Dropdown>
+                        <Dropdown.Toggle
+                          as={iconBtn}
+                          id="dropdown-custom-components"
+                        />
+                        <Dropdown.Menu align="right"></Dropdown.Menu>
+                      </Dropdown>
+                    </Row>
+                  </Card.Header>
                   <Card.Body>
                     <Card.Text>{project.description}</Card.Text>
                   </Card.Body>
