@@ -37,7 +37,6 @@ export const login_user = createAsyncThunk(
           headers: { "X-CSRFToken": csrfToken },
         })
       ).data;
-        console.log(response_data)
 
       // Get the project and task for the user
       await dispatch(get_projects());
@@ -61,9 +60,31 @@ export const logout_user = createAsyncThunk(
     const csrfToken = await (await axios_instance.get("/csrftoken")).data.token;
 
     // Logout
-    axios_instance.post("/logout", undefined, {
+    await axios_instance.post("/logout", undefined, {
       headers: { "X-CSRFToken": csrfToken },
     });
+  }
+);
+
+export const check_login = createAsyncThunk(
+  "user/check_login",
+  async (payload, { dispatch, rejectWithValue }) => {
+    // Get CSRF Token
+    const csrfToken = (await axios_instance.get("/csrftoken")).data.token;
+
+    // Get detail
+    const response_data: LoginAPIResponse = (
+      await axios_instance.get("/check-login", {
+        headers: { "X-CSRFToken": csrfToken },
+      })
+    ).data;
+
+    // Get the project and task for the user
+    await dispatch(get_projects());
+    await dispatch(get_tasks());
+
+    // Return response
+    return response_data;
   }
 );
 export const userSlice = createSlice({
@@ -115,17 +136,23 @@ export const userSlice = createSlice({
       return action;
     },
     [login_user.fulfilled as any]: (state, action: LoginActionFulfilled) => {
-      state.logged_in = true
+      state.logged_in = true;
       state.username = action.payload.username;
-      state.first_name = action.payload.first_name
-      state.last_name = action.payload.last_name
+      state.first_name = action.payload.first_name;
+      state.last_name = action.payload.last_name;
     },
     [logout_user.fulfilled as any]: (state, action) => {
-      state.logged_in = false
-      state.username = ""
-      state.first_name = ""
-      state.last_name = ""
-    }
+      state.logged_in = false;
+      state.username = "";
+      state.first_name = "";
+      state.last_name = "";
+    },
+    [check_login.fulfilled as any]: (state, action: LoginActionFulfilled) => {
+      state.logged_in = true;
+      state.username = action.payload.username;
+      state.first_name = action.payload.first_name;
+      state.last_name = action.payload.last_name;
+    },
   },
 });
 
