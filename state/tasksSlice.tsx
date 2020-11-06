@@ -120,6 +120,11 @@ export declare interface TaskData {
   description: string;
   project: number;
 }
+export declare interface TaskCreateData {
+  title: string;
+  description: string;
+  project: number;
+}
 
 export declare interface TaskPutPayload {
   id: number;
