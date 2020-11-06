@@ -1,4 +1,4 @@
-import React, { FormEvent, FunctionComponent, useMemo, useState } from "react";
+import React, { FunctionComponent, useState } from "react";
 import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import Link from "next/link";
 import { RootState } from "../state/reducers";
@@ -9,14 +9,14 @@ import { useRouter } from "next/router";
 
 export const NavigationBar: FunctionComponent<{}> = ({ children }) => {
   const router = useRouter();
-  const dispatch = useThunkDispatch();
+  const asyncDispatch = useThunkDispatch();
   const { username, first_name, last_name, logged_in } = useSelector(
     (state: RootState) => state.user
   );
   const [collapsed, setCollapsed] = useState(true);
   async function logout() {
-    setCollapsed(false)
-    await dispatch(logout_user());
+    setCollapsed(false);
+    await asyncDispatch(logout_user());
     router.push("/");
   }
   return (
@@ -28,12 +28,17 @@ export const NavigationBar: FunctionComponent<{}> = ({ children }) => {
         bg="dark"
         variant="dark"
       >
-        <Navbar.Toggle onClick={(e) => setCollapsed(!collapsed)} aria-controls="responsive-navbar-nav" />
+        <Navbar.Toggle
+          onClick={(e) => setCollapsed(!collapsed)}
+          aria-controls="responsive-navbar-nav"
+        />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">
             <Nav.Item>
               <Link href="/">
-                <a className="nav-link" onClick={(e) => setCollapsed(false)}>Home</a>
+                <a className="nav-link" onClick={(e) => setCollapsed(false)}>
+                  Home
+                </a>
               </Link>
             </Nav.Item>
           </Nav>
@@ -45,6 +50,8 @@ export const NavigationBar: FunctionComponent<{}> = ({ children }) => {
                 id="collasible-nav-dropdown"
                 alignRight={true}
               >
+                <NavDropdown.Item>Projects</NavDropdown.Item>
+                <NavDropdown.Divider />
                 <NavDropdown.Item>Setting</NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={(e) => logout()}>

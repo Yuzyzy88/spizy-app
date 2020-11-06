@@ -85,29 +85,96 @@ export const projectsSlice = createSlice({
   name: "projects",
   initialState: {
     projects: Array<Project>(),
+    create_project_modal_visible: false,
+    delete_project_modal_visible: false,
+    delete_project_model: null,
+    update_project_modal_visible: false,
+    update_project_model: { id: -1, title: "", description: "" },
   },
-  reducers: {},
+  reducers: {
+    toggle_project_modal_visibility(state, action) {
+      state.create_project_modal_visible = !state.create_project_modal_visible;
+      return state;
+    },
+    set_project_modal_visibility(
+      state,
+      action: { type: string; payload: boolean }
+    ) {
+      state.create_project_modal_visible = action.payload;
+      return state;
+    },
+    set_delete_project_modal_visibility(
+      state,
+      action: { type: string; payload: boolean }
+    ) {
+      state.delete_project_modal_visible = action.payload;
+      return state;
+    },
+    set_delete_project_model(
+      state,
+      action: { type: string; payload: Project }
+    ) {
+      state.delete_project_model = action.payload;
+      return state;
+    },
+    set_update_project_modal_visibility(
+      state,
+      action: { type: string; payload: boolean }
+    ) {
+      state.update_project_modal_visible = action.payload;
+      return state;
+    },
+    set_update_project_model(
+      state,
+      action: { type: string; payload: Project }
+    ) {
+      state.update_project_model = action.payload;
+      return state;
+    },
+  },
   extraReducers: {
     [get_projects.fulfilled as any]: (
       state,
       action: { type: string; payload: Projects }
     ) => {
       state.projects = action.payload as Array<Project>;
-      console.log("state");
-      console.log(state);
     },
-    [create_project.fulfilled as any]: (state, action) => {
-      console.log(action);
+    [create_project.fulfilled as any]: (
+      state,
+      action: { type: string; payload: Project }
+    ) => {
+      state.projects.push(action.payload);
     },
-    [put_project.fulfilled as any]: (state, action) => {
-      console.log(action);
+    [put_project.fulfilled as any]: (
+      state,
+      action: { type: string; payload: Project }
+    ) => {
+      let project_position = state.projects.findIndex(
+        (project) => project.id == action.payload.id
+      );
+      state.projects[project_position] = action.payload;
+      return state;
     },
-    [delete_project.fulfilled as any]: (state, action) => {
-      console.log(action);
+    [delete_project.fulfilled as any]: (
+      state,
+      action: { type: string; payload: Project }
+    ) => {
+      let pos = state.projects.findIndex(
+        (project) => project.id != action.payload.id
+      );
+      state.projects.splice(pos, 1);
+      return state;
     },
   },
 });
-
+export const {
+  toggle_project_modal_visibility,
+  set_project_modal_visibility,
+  set_delete_project_modal_visibility,
+  set_delete_project_model,
+  set_update_project_modal_visibility,
+  set_update_project_model,
+} = projectsSlice.actions;
 export default projectsSlice.reducer;
 
 // --- Types ---
@@ -130,19 +197,4 @@ export declare interface ProjectPutPayload {
 }
 export declare interface ProjectDeletePayload {
   id: number;
-}
-export declare interface Task {
-  id: number;
-  title: string;
-  description: string;
-  project: number;
-  owner: string;
-}
-export declare interface Tasks {
-  [index: number]: Task;
-}
-export declare interface TaskCreateData {
-  title: string;
-  description: string;
-  project: number;
 }
