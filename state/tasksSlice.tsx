@@ -19,7 +19,7 @@ export const get_tasks = createAsyncThunk(
 );
 
 export const create_task = createAsyncThunk(
-  "tasks/get_tasks",
+  "tasks/create_tasks",
   async (payload: TaskData, { rejectWithValue }) => {
     try {
       const csrfToken = await get_csrf_token();
@@ -37,7 +37,7 @@ export const create_task = createAsyncThunk(
   }
 );
 export const put_task = createAsyncThunk(
-  "tasks/get_tasks",
+  "tasks/put_tasks",
   async (payload: TaskPutPayload, { rejectWithValue }) => {
     try {
       const csrfToken = await get_csrf_token();
@@ -60,7 +60,7 @@ export const put_task = createAsyncThunk(
 );
 
 export const delete_task = createAsyncThunk(
-  "tasks/get_tasks",
+  "tasks/delete_tasks",
   async (payload: TaskDeletePayload, { rejectWithValue }) => {
     try {
       const csrfToken = await get_csrf_token();
@@ -88,10 +88,14 @@ export const tasksSlice = createSlice({
       state,
       action: { type: string; payload: Tasks }
     ) => {
-      state.tasks = action.payload as Array<Task>;
+      state.tasks = action.payload as any;
+      console.log(state.tasks);
     },
-    [create_task.fulfilled as any]: (state, action) => {
-      console.log(action);
+    [create_task.fulfilled as any]: (
+      state,
+      action: { type: string; payload: Task }
+    ) => {
+      state.tasks.push(action.payload);
     },
     [put_task.fulfilled as any]: (state, action) => {
       console.log(action);
