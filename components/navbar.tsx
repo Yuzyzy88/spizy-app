@@ -37,7 +37,7 @@ export const NavigationBar: FunctionComponent<{}> = ({ children }) => {
             <Nav.Item>
               <Link href="/">
                 <a className="nav-link" onClick={(e) => setCollapsed(false)}>
-                  Home
+                  {process.env.NEXT_PUBLIC_SITE_NAME}
                 </a>
               </Link>
             </Nav.Item>
