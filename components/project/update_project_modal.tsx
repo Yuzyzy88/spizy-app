@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Button, Form, Modal, Nav, Tab, Tabs } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import {
   ProjectDataPayload,
@@ -8,10 +8,14 @@ import {
 } from "../../state/projectsSlice";
 import { RootState } from "../../state/reducers";
 import { useThunkDispatch } from "../../state/store";
+import { ProjectUpdateForm } from "./project_update_form";
+import { TasksUpdateForm } from "./tasks_update_form";
+import formStyles from "../../styles/form.module.css";
 
 export const UpdateProjectModal: FunctionComponent<{ visible: Boolean }> = ({
   visible,
 }) => {
+  const [tab, setTab] = useState("project");
   const dispatch = useDispatch();
   const asyncDispatch = useThunkDispatch();
   const { update_project_model } = useSelector(
@@ -36,59 +40,39 @@ export const UpdateProjectModal: FunctionComponent<{ visible: Boolean }> = ({
   };
   return (
     <>
-      <Modal show={visible} centered onHide={() => close_modal()}>
+      <Modal
+        show={visible}
+        centered
+        onHide={() => close_modal()}
+        dialogClassName={
+          tab == UpdateProjectDialogTabs.tasks
+            ? formStyles.update_project_modal_task
+            : formStyles.update_project_modal_project
+        }
+      >
         <Modal.Header closeButton>
           <Modal.Title>Update Project</Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="name">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="input"
-                minLength={1}
-                required={true}
-                placeholder="My project"
-                onChange={(event) =>
-                  setUpdatedProject({
-                    ...updatedProject,
-                    title: event.target.value,
-                  })
-                }
-                defaultValue={update_project_model.title}
-              />
-            </Form.Group>
-
-            <Form.Group controlId="description">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                minLength={1}
-                required={true}
-                rows={3}
-                placeholder="A description of my project"
-                onChange={(event) =>
-                  setUpdatedProject({
-                    ...updatedProject,
-                    description: event.target.value,
-                  })
-                }
-                defaultValue={update_project_model.description}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-
-        <Modal.Footer>
-          <Button variant="secondary" onClick={(event) => close_modal()}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={(event) => update_project()}>
-            Update
-          </Button>
-        </Modal.Footer>
+        <Tabs
+          className={`m-1`}
+          id="update-project-tabs"
+          activeKey={tab}
+          onSelect={(k) => setTab(k)}
+        >
+          <Tab eventKey="project" title="Project">
+            <ProjectUpdateForm />
+          </Tab>
+          <Tab eventKey="tasks" title="Tasks">
+            <TasksUpdateForm />
+          </Tab>
+        </Tabs>
       </Modal>
     </>
   );
 };
+
+enum UpdateProjectDialogTabs {
+  project = "project",
+  tasks = "tasks",
+}

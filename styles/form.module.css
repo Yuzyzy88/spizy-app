@@ -18,3 +18,9 @@
     max-width: 500px;
     border-radius: 3px;
 }
+.update_project_modal_task {
+    max-width: 90vw;
+}
+.update_project_modal_project {
+    max-width: 700px;
+}
