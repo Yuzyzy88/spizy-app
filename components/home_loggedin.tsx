@@ -46,7 +46,7 @@ export function LoggedInHome() {
     create_project_modal_visible,
     update_project_modal_visible,
     delete_project_modal_visible,
-    update_project_model
+    update_project_model,
   } = useSelector((state: RootState) => state.projects);
   const { tasks } = useSelector((state: RootState) => state.tasks);
   const dispatch = useDispatch();
@@ -150,7 +150,11 @@ export function LoggedInHome() {
             </Col>
           ))
         ) : (
-          <h1 className="text-center">No Projects Yet</h1>
+          <Row className={`align-items-center`} style={{height: '50vh'}}>
+            <h5 className="text-center text-wrap text-light font-weight-light">
+             No projects yet, create one above 🗃️
+            </h5>
+          </Row>
         )}
       </Row>
       <CreateProjectModal visible={create_project_modal_visible} />
