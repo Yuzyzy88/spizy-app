@@ -20,7 +20,7 @@ export const get_tasks = createAsyncThunk(
 
 export const create_task = createAsyncThunk(
   "tasks/create_tasks",
-  async (payload: TaskData, { rejectWithValue }) => {
+  async (payload: TaskCreateData, { rejectWithValue }) => {
     try {
       const csrfToken = await get_csrf_token();
       // Create teh task
@@ -41,14 +41,12 @@ export const put_task = createAsyncThunk(
   async (payload: TaskPutPayload, { rejectWithValue }) => {
     try {
       const csrfToken = await get_csrf_token();
+      // Extract ID and data
+      const { id, ...task_data } = payload;
       // PUT the task data
-      const response = await axios_instance.put(
-        `/task/${payload.id}`,
-        payload.task_data,
-        {
-          headers: { "X-CSRFToken": csrfToken },
-        }
-      );
+      const response = await axios_instance.put(`/task/${id}`, task_data, {
+        headers: { "X-CSRFToken": csrfToken },
+      });
       return response.data;
     } catch (e) {
       // Return error
@@ -68,7 +66,7 @@ export const delete_task = createAsyncThunk(
       const response = await axios_instance.delete(`/task/${payload.id}`, {
         headers: { "X-CSRFToken": csrfToken },
       });
-      return response.data;
+      return payload;
     } catch (e) {
       // Return error
       const error: AxiosError = e;
@@ -100,8 +98,14 @@ export const tasksSlice = createSlice({
     [put_task.fulfilled as any]: (state, action) => {
       console.log(action);
     },
-    [delete_task.fulfilled as any]: (state, action) => {
-      console.log(action);
+    [delete_task.fulfilled as any]: (
+      state,
+      action: { type: string; payload: TaskDeletePayload }
+    ) => {
+      // Find the task in the state
+      const pos = state.tasks.findIndex((task) => task.id == action.payload.id);
+      // Remove the task
+      state.tasks.splice(pos, 1);
     },
   },
 });
@@ -115,26 +119,18 @@ export declare interface Task {
   description: string;
   project: number;
   owner: string;
+  progress: number;
+  due_date: string;
 }
 export declare interface Tasks {
   [index: number]: Task;
 }
-export declare interface TaskData {
-  title: string;
-  description: string;
-  project: number;
-}
-export declare interface TaskCreateData {
-  title: string;
-  description: string;
-  project: number;
-}
 
-export declare interface TaskPutPayload {
-  id: number;
-  task_data: TaskData;
-}
+export type TaskCreateData = Pick<Task, "title" | "description" | "project">;
 
-export declare interface TaskDeletePayload {
-  id: number;
-}
+export type TaskPutPayload = Pick<
+  Task,
+  "id" | "title" | "description" | "project"
+>;
+
+export type TaskDeletePayload = Pick<Task, "id">;

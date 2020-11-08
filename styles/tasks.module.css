@@ -1,0 +1,18 @@
+
+.task_card {
+    height: 100%;
+    transition: all .5s;
+    scrollbar-width: thin;
+    min-height: 10rem;
+}
+
+.task_description {
+    overflow: auto;
+    max-height: 14rem;
+    scrollbar-width: thin;
+    border: 1px lightgray;
+}
+.tasks_container {
+    display: flex;
+    flex-wrap: wrap;;
+}
