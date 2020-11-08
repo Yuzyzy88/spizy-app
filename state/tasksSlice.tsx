@@ -95,8 +95,14 @@ export const tasksSlice = createSlice({
     ) => {
       state.tasks.push(action.payload);
     },
-    [put_task.fulfilled as any]: (state, action) => {
-      console.log(action);
+    [put_task.fulfilled as any]: (
+      state,
+      action: { type: string; payload: TaskPutPayload }
+    ) => {
+      // Find the task in the state
+      const pos = state.tasks.findIndex((task) => task.id == action.payload.id);
+      // Update Task
+      state.tasks[pos] = action.payload;
     },
     [delete_task.fulfilled as any]: (
       state,
@@ -126,11 +132,8 @@ export declare interface Tasks {
   [index: number]: Task;
 }
 
-export type TaskCreateData = Pick<Task, "title" | "description" | "project">;
+export type TaskCreateData = Pick<Task, "title" | "description" | "project" | "progress">;
 
-export type TaskPutPayload = Pick<
-  Task,
-  "id" | "title" | "description" | "project"
->;
+export type TaskPutPayload = Task;
 
 export type TaskDeletePayload = Pick<Task, "id">;

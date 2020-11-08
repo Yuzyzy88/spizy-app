@@ -1,15 +1,11 @@
-import Icon from '@mdi/react';
-import React, { FunctionComponent, useMemo, useState } from 'react';
-import taskStyles from '../../styles/tasks.module.css';
-import { RootState } from '../../state/reducers';
-import { set_update_project_modal_visibility } from '../../state/projectsSlice';
-import { useThunkDispatch } from '../../state/store';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  mdiCheck,
-  mdiDelete,
-  mdiPencil,
-} from "@mdi/js";
+import Icon from "@mdi/react";
+import React, { FunctionComponent, useMemo, useState } from "react";
+import taskStyles from "../../styles/tasks.module.css";
+import { RootState } from "../../state/reducers";
+import { set_update_project_modal_visibility } from "../../state/projectsSlice";
+import { useThunkDispatch } from "../../state/store";
+import { useDispatch, useSelector } from "react-redux";
+import { mdiCancel, mdiCheck, mdiClose, mdiDelete, mdiPencil } from "@mdi/js";
 import {
   Modal,
   Form,
@@ -17,10 +13,13 @@ import {
   Card,
   Row,
   Col,
+  ProgressBar,
 } from "react-bootstrap";
 import {
   create_task,
   delete_task,
+  put_task,
+  Task,
   TaskCreateData,
 } from "../../state/tasksSlice";
 
@@ -35,6 +34,7 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
     title: "",
     description: "",
     project: update_project_model.id,
+    progress: 0
   });
   const close_modal = () => {
     dispatch(set_update_project_modal_visibility(false));
@@ -45,6 +45,11 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
     return tasks.filter((task) => task.project == update_project_model.id);
   }, [tasks]);
 
+  function getCardVariantFromProgress(task: Task) {
+    if (task.progress == 0) return "";
+    else if (task.progress == 100) return "success";
+    else return "warning";
+  }
   // Add a task
   async function add_task() {
     await asyncDispatch(create_task(newTask));
@@ -52,14 +57,34 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
 
   // Delete Mode
   const [deleteMode, setDeleteMode] = useState<{
-    delete_task: null | TaskData;
+    task: null | Task;
     enabled: boolean;
   }>({
     enabled: false,
-    delete_task: null,
+    task: null,
   });
   async function deleteTask() {
-    await asyncDispatch(delete_task({ id: deleteMode.delete_task.id }));
+    await asyncDispatch(delete_task({ id: deleteMode.task.id }));
+    setDeleteMode({ enabled: false, task: null });
+  }
+
+  // Edit Mode
+  const [editMode, setEditMode] = useState<{
+    task: null | Task;
+    enabled: boolean;
+  }>({
+    enabled: false,
+    task: null,
+  });
+  function isTaskInEditMode(task: Task) {
+    return editMode.enabled && editMode.task.id == task.id;
+  }
+  async function saveTask() {
+    await asyncDispatch(put_task(editMode.task));
+    setEditMode({ enabled: false, task: null });
+  }
+  async function completeTask(task: Task) {
+    await asyncDispatch(put_task({ ...task, progress: 100 }));
   }
   return (
     <>
@@ -70,35 +95,137 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
               key={idx}
               className={`m-3 ${taskStyles.task_card}`}
               style={{ width: "18rem" }}
+              bg={getCardVariantFromProgress(task)}
+              text={
+                getCardVariantFromProgress(task) == "warning" ||
+                getCardVariantFromProgress(task) == ""
+                  ? "dark"
+                  : "white"
+              }
             >
-              <Card.Body>
-                <Card.Title>
-                  <Row className={`m-0 justify-content-between`}>
-                    <Col className={`m-0 p-0`}>{task.title}</Col>
-                    <Col className={`col-3 m-0 p-0`}>
-                      <Row className={`justify-content-end m-0`}>
-                        <Icon path={mdiPencil} size={1} />
-                      </Row>
-                    </Col>
-                  </Row>
-                </Card.Title>
-                <Card.Text className={`${taskStyles.task_description}`}>
-                  {task.description}
-                </Card.Text>
-              </Card.Body>
+              {isTaskInEditMode(task) ? (
+                <Card.Body>
+                  <Form.Group id="edit-title">
+                    <Form.Control
+                      type="input"
+                      defaultValue={task.title}
+                      onChange={(event) =>
+                        setEditMode({
+                          ...editMode,
+                          task: {
+                            ...editMode.task,
+                            title: event.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </Form.Group>
+                  <Form.Group id="edit-description">
+                    <Form.Control
+                      as="textarea"
+                      rows={7}
+                      defaultValue={task.description}
+                      onChange={(event) =>
+                        setEditMode({
+                          ...editMode,
+                          task: {
+                            ...editMode.task,
+                            description: event.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </Form.Group>
+                  <Form.Group id="progess">
+                    <Form.Label>Progress</Form.Label>
+                    <Form.Control
+                      type="range"
+                      defaultValue={task.progress}
+                      onChange={(event) =>
+                        setEditMode({
+                          ...editMode,
+                          task: {
+                            ...editMode.task,
+                            progress: Number(event.target.value),
+                          },
+                        })
+                      }
+                    />
+                  </Form.Group>
+                </Card.Body>
+              ) : (
+                <Card.Body>
+                  <Card.Title>
+                    <Row className={`m-0 justify-content-between`}>
+                      <Col className={`m-0 p-0`}>{task.title}</Col>
+                      <Col className={`col-3 m-0 p-0`}>
+                        <Row className={`justify-content-end m-0`}>
+                          <a
+                            onClick={(event) => {
+                              isTaskInEditMode(task)
+                                ? null
+                                : setEditMode({ enabled: true, task: task });
+                            }}
+                          >
+                            <Icon
+                              path={isTaskInEditMode(task) ? null : mdiPencil}
+                              size={1}
+                            />
+                          </a>
+                        </Row>
+                      </Col>
+                    </Row>
+                  </Card.Title>
+                  <Card.Text className={`${taskStyles.task_description}`}>
+                    {task.description}
+                    {task.progress !== 100 && (
+                      <ProgressBar
+                        className={`mt-3`}
+                        animated
+                        now={task.progress}
+                        variant="dark"
+                        label={`${task.progress}%`}
+                      />
+                    )}
+                  </Card.Text>
+                </Card.Body>
+              )}
+
               <Card.Footer>
-                <Row
-                  className={`justify-content-between align-items-center m-0 p-0`}
-                >
-                  {deleteMode.enabled &&
-                  deleteMode.delete_task.id == task.id ? (
-                    <>
+                {isTaskInEditMode(task) ? (
+                  <Row
+                    className={`justify-content-end align-items-center m-0 p-0`}
+                  >
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className={`ml-1`}
+                      onClick={(e) =>
+                        setEditMode({ enabled: false, task: null })
+                      }
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="light"
+                      className={`ml-1`}
+                      onClick={(e) => saveTask()}
+                    >
+                      Save
+                    </Button>
+                  </Row>
+                ) : (
+                  <Row
+                    className={`justify-content-between align-items-center m-0 p-0`}
+                  >
+                    {deleteMode.enabled && deleteMode.task.id == task.id ? (
                       <Col className={`p-0`}>
                         <Button
                           size="sm"
                           variant="secondary"
                           onClick={() =>
-                            setDeleteMode({ enabled: false, delete_task: null })
+                            setDeleteMode({ enabled: false, task: null })
                           }
                         >
                           Cancel
@@ -112,23 +239,33 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
                           Confirm
                         </Button>
                       </Col>
-                    </>
-                  ) : (
-                    <a
-                      onClick={() =>
-                        setDeleteMode({ enabled: true, delete_task: task })
-                      }
-                    >
-                      <Icon
-                        className={`text-danger`}
-                        path={mdiDelete}
-                        size={1}
-                      />
-                    </a>
-                  )}
+                    ) : (
+                      <a
+                        onClick={() =>
+                          setDeleteMode({ enabled: true, task: task })
+                        }
+                      >
+                        <Button variant="light" size="sm">
+                          <Icon
+                            className={`text-danger`}
+                            path={mdiDelete}
+                            size={1}
+                          />
+                        </Button>
+                      </a>
+                    )}
 
-                  {task.progress != 100 && <Icon path={mdiCheck} size={1} />}
-                </Row>
+                    {task.progress != 100 && (
+                      <a
+                        onClick={(event) => {
+                          completeTask(task);
+                        }}
+                      >
+                        <Icon path={mdiCheck} size={1} />
+                      </a>
+                    )}
+                  </Row>
+                )}
               </Card.Footer>
             </Card>
           ))}
@@ -165,24 +302,19 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
                   }
                 />
               </Form.Group>
+              <Form.Group>
+                <Form.Label>Progress</Form.Label>
+                <Form.Control
+                  type="range"
+                  onChange={(event) => {
+                    setNewTask({
+                      ...newTask,
+                      progress: Number(event.target.value),
+                    });
+                  }}
+                />
+              </Form.Group>
               <Row className={`justify-content-end pr-3`}>
-                <Col>
-                  {/* <ToggleButtonGroup
-                      type="radio"
-                      name="options"
-                      defaultValue={1}
-                    >
-                      <ToggleButton value={1} variant="light">
-                        Not Started
-                      </ToggleButton>
-                      <ToggleButton value={2} variant="light">
-                        In Progress
-                      </ToggleButton>
-                      <ToggleButton value={3} variant="light">
-                        Done
-                      </ToggleButton>
-                    </ToggleButtonGroup> */}
-                </Col>
                 <Col className={`col-1`}>
                   <Row className={`justify-content-end`}>
                     <Button onClick={() => add_task()}>Add</Button>
@@ -198,7 +330,6 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
         <Button variant="secondary" onClick={() => close_modal()}>
           Close
         </Button>
-        <Button variant="primary">Update</Button>
       </Modal.Footer>
     </>
   );
