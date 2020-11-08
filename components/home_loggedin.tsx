@@ -27,19 +27,21 @@ import {
 import { DeleteProjectModal } from "./project/delete_project_modal";
 import { UpdateProjectModal } from "./project/update_project_modal";
 
-const iconBtn = forwardRef(({ children, onClick }, ref) => {
-  return (
-    <a
-      ref={ref as any}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-      }}
-    >
-      <Icon path={mdiDotsVertical} size={1} />
-    </a>
-  );
-});
+const iconBtn = forwardRef(
+  ({ children, onClick }: { children: React.ReactNode; onClick: any }, ref) => {
+    return (
+      <a
+        ref={ref as any}
+        onClick={(e) => {
+          e.preventDefault();
+          onClick(e);
+        }}
+      >
+        <Icon path={mdiDotsVertical} size={1} />
+      </a>
+    );
+  }
+);
 export function LoggedInHome() {
   const {
     projects,
@@ -150,9 +152,9 @@ export function LoggedInHome() {
             </Col>
           ))
         ) : (
-          <Row className={`align-items-center`} style={{height: '50vh'}}>
+          <Row className={`align-items-center`} style={{ height: "50vh" }}>
             <h5 className="text-center text-wrap text-light font-weight-light">
-             No projects yet, create one above 🗃️
+              No projects yet, create one above 🗃️
             </h5>
           </Row>
         )}
