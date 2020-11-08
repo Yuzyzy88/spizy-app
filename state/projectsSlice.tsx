@@ -159,7 +159,7 @@ export const projectsSlice = createSlice({
       state,
       action: { type: string; payload: Project }
     ) => {
-      let pos = state.projects.findIndex(
+      const pos = state.projects.findIndex(
         (project) => project.id != action.payload.id
       );
       state.projects.splice(pos, 1);
