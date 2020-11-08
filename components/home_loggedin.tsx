@@ -54,23 +54,49 @@ export function LoggedInHome() {
   const { tasks } = useSelector((state: RootState) => state.tasks);
   const dispatch = useDispatch();
 
+  // Group Tasks Based on their Projects
   const grouped_tasks = useMemo(() => {
     let grouped_tasks: GroupedTasks = {};
+
+    // Go through all the projects and extract on their tasks
     for (var i = 0; i < projects.length; i++) {
       let project_id = projects[i].id;
       grouped_tasks[project_id] = tasks.filter(
         (task) => task.project == project_id
       );
     }
+
+    // Return the tasks
     return grouped_tasks;
   }, [tasks, projects]);
-  function getProjectProgress(tasks: Task[]): number {
-    let progress: number = 0;
-    tasks.forEach((task) => {
-      progress += task.progress;
+
+  // Calculate the overall progress for all the projects
+  const overallProjectProgress = useMemo(() => {
+    // Initialize hash map of project id -> overall progress
+    let all_project_progress: { [key: number]: number } = {};
+
+    // Go through all the projects
+    projects.forEach((project) => {
+      // Extract all the tasks
+      let tasks = grouped_tasks[project.id];
+
+      // Check if there are tasks
+      if (tasks && tasks.length > 0) {
+        let progress: number = 0;
+        tasks.forEach((task) => {
+          progress += task.progress;
+        });
+        all_project_progress[project.id] = Number(
+          (progress / tasks.length).toFixed(2)
+        );
+      }
+      // If there are no tasks set to 100
+      else all_project_progress[project.id] = 100;
     });
-    return Number((progress / tasks.length).toFixed(2));
-  }
+
+    // Return progress for all the projects
+    return all_project_progress;
+  }, [projects, tasks]);
 
   const delete_project = (project: Project) => {
     dispatch(set_delete_project_model(project));
@@ -107,7 +133,7 @@ export function LoggedInHome() {
         {projects.length > 0 ? (
           // If the users has projects output them
           projects.map((project, index) => (
-            <Col className="col-sm-6  col-md-4" key={index}>
+            <Col className="col-12 col-sm-6  col-md-4" key={index}>
               <Row className={`justify-content-center`}>
                 <Card
                   bg={`light`}
@@ -145,11 +171,9 @@ export function LoggedInHome() {
                     <Card.Text>
                       {project.description}
                       <ProgressBar
-                        now={getProjectProgress(grouped_tasks[project.id])}
+                        now={overallProjectProgress[project.id]}
                         animated
-                        label={`${getProjectProgress(
-                          grouped_tasks[project.id]
-                        )}%`}
+                        label={`${overallProjectProgress[project.id]}%`}
                         className={`mt-2`}
                       />
                     </Card.Text>
@@ -158,7 +182,7 @@ export function LoggedInHome() {
                     <ListGroup variant="flush">
                       {grouped_tasks[project.id].map((task) => (
                         <ListGroup.Item>
-                          <Row className={`justify-content-between`}>
+                          <Row className={`justify-content-between align-items-start`}>
                             <Col>
                               <Row>
                                 <small className={`mx-3`}>{task.title}</small>
