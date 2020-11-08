@@ -8,6 +8,7 @@ import {
   Container,
   Dropdown,
   ListGroup,
+  ProgressBar,
   Row,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -57,12 +58,19 @@ export function LoggedInHome() {
     let grouped_tasks: GroupedTasks = {};
     for (var i = 0; i < projects.length; i++) {
       let project_id = projects[i].id;
-      grouped_tasks[project_id] = tasks.filter((task) => {
-        task.project == project_id;
-      });
+      grouped_tasks[project_id] = tasks.filter(
+        (task) => task.project == project_id
+      );
     }
     return grouped_tasks;
   }, [tasks, projects]);
+  function getProjectProgress(tasks: Task[]): number {
+    let progress: number = 0;
+    tasks.forEach((task) => {
+      progress += task.progress;
+    });
+    return Number((progress / tasks.length).toFixed(2));
+  }
 
   const delete_project = (project: Project) => {
     dispatch(set_delete_project_model(project));
@@ -134,13 +142,36 @@ export function LoggedInHome() {
                     </Row>
                   </Card.Header>
                   <Card.Body>
-                    <Card.Text>{project.description}</Card.Text>
+                    <Card.Text>
+                      {project.description}
+                      <ProgressBar
+                        now={getProjectProgress(grouped_tasks[project.id])}
+                        animated
+                        label={`${getProjectProgress(
+                          grouped_tasks[project.id]
+                        )}%`}
+                        className={`mt-2`}
+                      />
+                    </Card.Text>
                   </Card.Body>
                   {grouped_tasks[project.id].length > 0 ? (
                     <ListGroup variant="flush">
-                      {grouped_tasks[project.id].map((task) => {
-                        <ListGroup.Item>{task.title}</ListGroup.Item>;
-                      })}
+                      {grouped_tasks[project.id].map((task) => (
+                        <ListGroup.Item>
+                          <Row className={`justify-content-between`}>
+                            <Col>
+                              <Row>
+                                <small className={`mx-3`}>{task.title}</small>
+                              </Row>
+                            </Col>
+                            <Col className={`col-2`}>
+                              <Row className={`justify-content-end m-0`}>
+                                <small>{task.progress}%</small>
+                              </Row>
+                            </Col>
+                          </Row>
+                        </ListGroup.Item>
+                      ))}
                     </ListGroup>
                   ) : (
                     <Card.Footer>
