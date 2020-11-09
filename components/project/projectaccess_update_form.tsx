@@ -1,6 +1,7 @@
 import { mdiCancel, mdiClose, mdiPlus } from "@mdi/js";
 import Icon from "@mdi/react";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { access } from "fs";
 import React, { FunctionComponent, useMemo, useState } from "react";
 import { Button, Col, Form, InputGroup, Modal, Row } from "react-bootstrap";
 import { useSelector } from "react-redux";
@@ -20,6 +21,8 @@ export const ProjectAccessUpdateForm: FunctionComponent = () => {
   const { update_project_model, projects } = useSelector(
     (state: RootState) => state.projects
   );
+
+  const { username } = useSelector((state: RootState) => state.user);
   const asyncDispatch = useThunkDispatch();
 
   // Get Access For this Project Only
@@ -32,6 +35,18 @@ export const ProjectAccessUpdateForm: FunctionComponent = () => {
     1: "Owner",
     2: "Member",
   };
+
+  // Get User Access
+  const userAccess = useMemo(() => {
+    let user_level = project_access_levels.filter(
+      (access) => access.user === username
+    );
+    return user_level.length > 0 ? user_level[0].membership_level : 0;
+  }, [all_access, username]);
+
+  const isUserOwner = useMemo(() => {
+    return userAccess == 1 ? true : false;
+  }, [userAccess]);
 
   // Create
   const [newAccess, setNewAccess] = useState<CreateAccessPayload>({
@@ -65,62 +80,66 @@ export const ProjectAccessUpdateForm: FunctionComponent = () => {
                     {membership_level_output[access.membership_level]}
                   </InputGroup.Text>
                 </InputGroup.Append>
-                <InputGroup.Append>
-                  <InputGroup.Text>
-                    <a onClick={(event) => deleteAccess(access)}>
-                      <Icon
-                        path={mdiClose}
-                        size={0.9}
-                        className={`text-danger`}
-                      ></Icon>
-                    </a>
-                  </InputGroup.Text>
-                </InputGroup.Append>
+                {isUserOwner && (
+                  <InputGroup.Append>
+                    <InputGroup.Text>
+                      <a onClick={(event) => deleteAccess(access)}>
+                        <Icon
+                          path={mdiClose}
+                          size={0.9}
+                          className={`text-danger`}
+                        ></Icon>
+                      </a>
+                    </InputGroup.Text>
+                  </InputGroup.Append>
+                )}
               </InputGroup>
             </Form.Group>
           ))}
         </Form>
-        <Form>
-          <Form.Row className="align-items-center justify-content-center">
-            <Col xs="12" sm={true}>
-              <Form.Control
-                placeholder="Add Username"
-                value={newAccess.user}
-                onChange={(event) => {
-                  setNewAccess({ ...newAccess, user: event.target.value });
-                }}
-              />
-            </Col>
-            <Col xs={true} sm="auto" className="my-1">
-              <Form.Control
-                as="select"
-                className="mr-sm-2"
-                id="inlineFormCustomSelect"
-                custom
-                value={newAccess.membership_level}
-                onChange={(event) => {
-                  setNewAccess({
-                    ...newAccess,
-                    membership_level: Number(event.target.value),
-                  });
-                }}
-              >
-                <option value={1}>Owner</option>
-                <option value={2}>Member</option>
-              </Form.Control>
-            </Col>
-            <Col xs="auto" className="my-1">
-              <Button
-                onClick={(event) => {
-                  addAccess();
-                }}
-                disabled={loading_create}
-              >
-                {loading_create ? `Adding` : "Add"}
-              </Button>
-            </Col>
-          </Form.Row>
-        </Form>
+        {isUserOwner && (
+          <Form>
+            <Form.Row className="align-items-center justify-content-center">
+              <Col xs="12" sm={true}>
+                <Form.Control
+                  placeholder="Add Username"
+                  value={newAccess.user}
+                  onChange={(event) => {
+                    setNewAccess({ ...newAccess, user: event.target.value });
+                  }}
+                />
+              </Col>
+              <Col xs={true} sm="auto" className="my-1">
+                <Form.Control
+                  as="select"
+                  className="mr-sm-2"
+                  id="inlineFormCustomSelect"
+                  custom
+                  value={newAccess.membership_level}
+                  onChange={(event) => {
+                    setNewAccess({
+                      ...newAccess,
+                      membership_level: Number(event.target.value),
+                    });
+                  }}
+                >
+                  <option value={1}>Owner</option>
+                  <option value={2}>Member</option>
+                </Form.Control>
+              </Col>
+              <Col xs="auto" className="my-1">
+                <Button
+                  onClick={(event) => {
+                    addAccess();
+                  }}
+                  disabled={loading_create}
+                >
+                  {loading_create ? `Adding` : "Add"}
+                </Button>
+              </Col>
+            </Form.Row>
+          </Form>
+        )}
       </Modal.Body>
       <Modal.Footer></Modal.Footer>
     </>
