@@ -128,12 +128,12 @@ export function LoggedInHome() {
           </Row>
         </Col>
       </Row>
-      <Row className={`justify-content-md-center`}>
+      <Row className={`justify-content-center`}>
         {/* Check if there are any projects the users has */}
         {projects.length > 0 ? (
           // If the users has projects output them
           projects.map((project, index) => (
-            <Col className="col-12 col-sm-6  col-md-4" key={index}>
+            <Col xs="auto" key={index}>
               <Row className={`justify-content-center`}>
                 <Card
                   bg={`light`}
@@ -168,21 +168,21 @@ export function LoggedInHome() {
                     </Row>
                   </Card.Header>
                   <Card.Body>
-                    <Card.Text>
-                      {project.description}
-                      <ProgressBar
-                        now={overallProjectProgress[project.id]}
-                        animated
-                        label={`${overallProjectProgress[project.id]}%`}
-                        className={`mt-2`}
-                      />
-                    </Card.Text>
+                    <Card.Text>{project.description}</Card.Text>
+                    <ProgressBar
+                      now={overallProjectProgress[project.id]}
+                      animated
+                      label={`${overallProjectProgress[project.id]}%`}
+                      className={`mt-2`}
+                    />
                   </Card.Body>
                   {grouped_tasks[project.id].length > 0 ? (
                     <ListGroup variant="flush">
-                      {grouped_tasks[project.id].map((task) => (
-                        <ListGroup.Item>
-                          <Row className={`justify-content-between align-items-start`}>
+                      {grouped_tasks[project.id].map((task, idx) => (
+                        <ListGroup.Item key={idx}>
+                          <Row
+                            className={`justify-content-between align-items-start`}
+                          >
                             <Col>
                               <Row>
                                 <small className={`mx-3`}>{task.title}</small>
