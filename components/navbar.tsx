@@ -50,9 +50,11 @@ export const NavigationBar: FunctionComponent<{}> = ({ children }) => {
                 id="collasible-nav-dropdown"
                 alignRight={true}
               >
-                <NavDropdown.Item>Projects</NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item>Setting</NavDropdown.Item>
+                <NavDropdown.Item>
+                  <Link href="/">
+                    <a className="dropdown-item p-0">Projects</a>
+                  </Link>
+                </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={(e) => logout()}>
                   Logout
