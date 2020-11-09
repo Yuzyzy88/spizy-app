@@ -34,7 +34,7 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
     title: "",
     description: "",
     project: update_project_model.id,
-    progress: 0
+    progress: 0,
   });
   const close_modal = () => {
     dispatch(set_update_project_modal_visibility(false));
@@ -140,6 +140,7 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
                     <Form.Label>Progress</Form.Label>
                     <Form.Control
                       type="range"
+                      custom
                       defaultValue={task.progress}
                       onChange={(event) =>
                         setEditMode({
@@ -178,16 +179,16 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
                   </Card.Title>
                   <Card.Text className={`${taskStyles.task_description}`}>
                     {task.description}
-                    {task.progress !== 100 && (
-                      <ProgressBar
-                        className={`mt-3`}
-                        animated
-                        now={task.progress}
-                        variant="dark"
-                        label={`${task.progress}%`}
-                      />
-                    )}
                   </Card.Text>
+                  {task.progress !== 100 && (
+                    <ProgressBar
+                      className={`mt-3`}
+                      animated
+                      now={task.progress}
+                      variant="dark"
+                      label={`${task.progress}%`}
+                    />
+                  )}
                 </Card.Body>
               )}
 
@@ -306,6 +307,7 @@ export const TasksUpdateForm: FunctionComponent<{}> = () => {
                 <Form.Label>Progress</Form.Label>
                 <Form.Control
                   type="range"
+                  custom
                   onChange={(event) => {
                     setNewTask({
                       ...newTask,
