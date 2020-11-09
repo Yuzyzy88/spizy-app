@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosError } from "axios";
 import { axios_instance } from "../utils/axios";
+import { get_all_access } from "./projectsAccessSlice";
 import { get_projects } from "./projectsSlice";
 import { get_tasks } from "./tasksSlice";
 
@@ -39,8 +40,7 @@ export const login_user = createAsyncThunk(
       ).data;
 
       // Get the project and task for the user
-      await dispatch(get_projects());
-      await dispatch(get_tasks());
+      await Promise.all([dispatch(get_projects()),  dispatch(get_tasks()), dispatch(get_all_access())])
 
       return response_data;
     } catch (e) {
@@ -80,8 +80,7 @@ export const check_login = createAsyncThunk(
     ).data;
 
     // Get the project and task for the user
-    await dispatch(get_projects());
-    await dispatch(get_tasks());
+    await Promise.all([dispatch(get_projects()),  dispatch(get_tasks()), dispatch(get_all_access())])
 
     // Return response
     return response_data;

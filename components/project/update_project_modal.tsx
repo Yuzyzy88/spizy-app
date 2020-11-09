@@ -11,6 +11,7 @@ import { useThunkDispatch } from "../../state/store";
 import { ProjectUpdateForm } from "./project_update_form";
 import { TasksUpdateForm } from "./tasks_update_form";
 import formStyles from "../../styles/form.module.css";
+import { ProjectAccessUpdateForm } from "./projectaccess_update_form";
 
 export const UpdateProjectModal: FunctionComponent<{ visible: Boolean }> = ({
   visible,
@@ -65,6 +66,9 @@ export const UpdateProjectModal: FunctionComponent<{ visible: Boolean }> = ({
           </Tab>
           <Tab eventKey="tasks" title="Tasks">
             <TasksUpdateForm />
+          </Tab>
+          <Tab eventKey="access" title="Access">
+            <ProjectAccessUpdateForm />
           </Tab>
         </Tabs>
       </Modal>
