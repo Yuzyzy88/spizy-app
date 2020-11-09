@@ -20,6 +20,7 @@ export const CreateProjectModal: FunctionComponent<{ visible: Boolean }> = ({
   });
   const create_new = async () => {
     await asyncDispatch(create_project(newProject));
+    setNewProject({ description: "", title: "" });
     dispatch(set_project_modal_visibility(false));
   };
   const close_modal = (clear: boolean = true) => {
